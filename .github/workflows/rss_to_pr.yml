@@ -23,5 +23,5 @@ jobs:
         uses: keiranlovett/rss-feed-to-markdown@main
         with:
           feed_url: 'https://www.youtube.com/feeds/videos.xml?channel_id=UCuVczNc74_jsmgNlAhHbz-Q'
-          template_file: 'template.md'
-          output_dir: 'PatchNotes'
+          template_file: '/template.md'
+          output_dir: '/PatchNotes'
