@@ -19,13 +19,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Debug: List Directory Structure
-        run: |
-          echo "Listing root directory"
-          ls -alh
-          echo "Listing assets directory"
-          ls -alh assets
-
       - name: Run RSS Feed to Markdown Action
         uses: keiranlovett/rss-feed-to-markdown@main
         with:
