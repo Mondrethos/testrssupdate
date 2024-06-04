@@ -26,11 +26,6 @@ jobs:
           template_file: 'template.md'
           output_dir: 'PatchNotes'
 
-      - name: Debug: List Output Directory
-        run: |
-          echo "Listing output directory"
-          ls -alh PatchNotes
-
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
