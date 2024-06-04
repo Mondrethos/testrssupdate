@@ -1,79 +1,27 @@
 name: RSS Feed to Markdown
 
 on:
-  schedule:
-    - cron: '0 * * * *'  # Runs every hour
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  rss_to_pr:
+  convert_feeds:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
 
-    - name: Fetch and Parse RSS Feed
-      id: fetch_rss
-      run: |
-        sudo apt-get install -y jq
-        RSS_URL="https://store.steampowered.com/feeds/news/app/2106670/?cc=US&l=english&snr=1_2108_9__2107"
-        RESPONSE=$(curl -s $RSS_URL)
-        ENTRIES=$(echo "$RESPONSE" | grep -oP '(?<=<entry>).*?(?=</entry>)' | jq -R -s -c 'split("\n")')
-        echo "entries=$ENTRIES" >> $GITHUB_ENV
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Create Branch
-      id: create_branch
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const branchName = `rss-updates-${new Date().toISOString().replace(/[:\-]/g, '').split('.')[0]}`;
-          const { data: mainRef } = await github.git.getRef({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            ref: 'heads/main',
-          });
-          await github.git.createRef({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            ref: `refs/heads/${branchName}`,
-            sha: mainRef.object.sha,
-          });
-          return branchName;
-        result-encoding: string
-        result-format: string
-
-    - name: Create and Commit Files
-      env:
-        BRANCH_NAME: ${{ steps.create_branch.outputs.result }}
-      run: |
-        mkdir -p PatchNotes
-        entries=${{ steps.fetch_rss.outputs.entries }}
-        branchName=${{ env.BRANCH_NAME }}
-        echo $entries | jq -c '.[]' | while read entry; do
-          title=$(echo $entry | grep -oP '(?<=<title>).*?(?=</title>)')
-          summary=$(echo $entry | grep -oP '(?<=<summary>).*?(?=</summary>)')
-          fileName="PatchNotes/${title// /_}.md"
-          echo -e "# $title\n\n$summary" > $fileName
-          git add $fileName
-        done
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git commit -m "Add RSS feed updates"
-        git push origin $branchName
-
-    - name: Create Pull Request
-      uses: actions/github-script@v6
-      env:
-        BRANCH_NAME: ${{ steps.create_branch.outputs.result }}
-      with:
-        script: |
-          const branchName = process.env.BRANCH_NAME;
-          await github.pulls.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: "RSS Feed Updates",
-            head: branchName,
-            base: "main",
-            body: "This pull request contains the latest updates from the RSS feed.",
-          });
+      - name: Run RSS Feed to Markdown Action
+        uses: keiranlovett/rss-feed-to-markdown@main
+        with:
+          feed_url: 'https://store.steampowered.com/feeds/news/app/2106670/?cc=US&l=english&snr=1_2108_9__2107'
+          template_file: 'template.md'
+          output_dir: 'PatchNotes'
