@@ -1,6 +1,7 @@
 ---
 title: [TITLE]
-enableToc: false
+date: [DATE]
+description: [DESCRIPTION]
 ---
 # [TITLE]
 #### [DATE]
