@@ -28,26 +28,28 @@ jobs:
       with:
         script: |
           const branchName = `rss-updates-${new Date().toISOString().replace(/[:\-]/g, '').split('.')[0]}`;
-          const mainBranch = await github.repos.getBranch({
+          const { data: mainRef } = await github.git.getRef({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            branch: 'main',
+            ref: 'heads/main',
           });
           await github.git.createRef({
             owner: context.repo.owner,
             repo: context.repo.repo,
             ref: `refs/heads/${branchName}`,
-            sha: mainBranch.data.commit.sha,
+            sha: mainRef.object.sha,
           });
           return branchName;
         result-encoding: string
         result-format: string
 
     - name: Create and Commit Files
+      env:
+        BRANCH_NAME: ${{ steps.create_branch.outputs.result }}
       run: |
         mkdir -p updates
         entries=${{ steps.fetch_rss.outputs.entries }}
-        branchName=${{ steps.create_branch.outputs.result }}
+        branchName=${{ env.BRANCH_NAME }}
         echo $entries | jq -c '.[]' | while read entry; do
           title=$(echo $entry | grep -oP '(?<=<title>).*?(?=</title>)')
           summary=$(echo $entry | grep -oP '(?<=<summary>).*?(?=</summary>)')
@@ -64,7 +66,7 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          const branchName = context.payload.inputs.branchName;
+          const branchName = process.env.BRANCH_NAME;
           await github.pulls.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
