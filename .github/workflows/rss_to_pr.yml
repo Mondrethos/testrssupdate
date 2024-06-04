@@ -23,7 +23,7 @@ jobs:
         uses: keiranlovett/rss-feed-to-markdown@main
         with:
           feed_url: 'https://store.steampowered.com/feeds/news/app/2106670/?cc=US&l=english&snr=1_2108_9__2107'
-          template_file: 'assets/template.md'
+          template_file: 'template.md'
           output_dir: 'PatchNotes'
 
       - name: Commit and Push Changes
