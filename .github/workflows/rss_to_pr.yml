@@ -19,21 +19,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Debug: List Directory Structure
-        run: |
-          echo "Listing root directory"
-          ls -alh
-          echo "Listing assets directory"
-          ls -alh assets
-
       - name: Run RSS Feed to Markdown Action
-        uses: keiranlovett/rss-feed-to-markdown@v1.0.0
+        uses: keiranlovett/rss-feed-to-markdown@main
         with:
-          feed_url: 'https://store.steampowered.com/feeds/news/app/2106670/?cc=US&l=english&snr=1_2108_9__2107'
+          feed_url: 'https://www.youtube.com/feeds/videos.xml?channel_id=UCuVczNc74_jsmgNlAhHbz-Q'
           template_file: 'template.md'
           output_dir: 'PatchNotes'
-
-      - name: Debug: List Output Directory
-        run: |
-          echo "Listing output directory"
-          ls -alh PatchNotes
